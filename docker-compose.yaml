@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  bot:
+    container_name: bot
+    build: .
+    image: bot
+    volumes:
+      - ./internal/config/config.dev.yaml:/app/config.yaml

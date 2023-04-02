@@ -1,0 +1,6 @@
+inpackage: False
+testonly: False
+with-expecter: True
+keeptree: False
+exported: False
+output: internal/mocks

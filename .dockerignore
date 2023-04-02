@@ -1,0 +1,12 @@
+.vscode
+.git
+LICENSE.md
+CHANGELOG.md
+README.md
+docker-compose.yaml
+internal/config/config.prod.yaml
+internal/config/config.dev.yaml
+internal/mocks
+go.work
+go.work.sum
+main

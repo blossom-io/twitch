@@ -1,0 +1,8 @@
+bot:
+  name: 'blossomsbot' # twitch login. see: twitch.tv/blossomsbot
+  oauth: 'oauth:0f33<TOKEN>fbcwhjqc' # see: https://twitchapps.com/tmi/
+  log_level: 'debug'
+  channel:
+    - 'asmongold'
+    - 'sodapoppin'
+
