@@ -5,4 +5,10 @@ bot:
   channel:
     - 'asmongold'
     - 'sodapoppin'
+  ignore:
+    - 'nightbot'
+    - 'moobot'
+    - 'streamlabs'
+    - 'streamelements'
+
 

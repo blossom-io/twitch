@@ -1,6 +1,8 @@
 package tmi
 
 import (
+	"time"
+
 	"blossom/internal/config"
 	"blossom/internal/service"
 	"blossom/pkg/logger"
@@ -8,19 +10,36 @@ import (
 	"github.com/gempir/go-twitch-irc/v4"
 )
 
+type Cmd string
+
+const (
+	CmdDefault     Cmd = "default"
+	CmdPing        Cmd = "!ping"
+	CmdSS          Cmd = "!ss"
+	CmdInvite      Cmd = "!invite"
+	CmdPreviewLink Cmd = "previewlink"
+)
+
 type chat struct {
-	log logger.Logger
-	Cfg *config.Config
-	TMI *twitch.Client // Twitch Messaging Interface
-	svc service.Servicer
+	log      logger.Logger
+	Cfg      *config.Config
+	TMI      *twitch.Client // Twitch Messaging Interface
+	svc      service.Servicer
+	Cooldown map[string]time.Time
+	Ignore   map[string]struct{}
 }
 
 func New(log logger.Logger, cfg *config.Config, svc service.Servicer, channels ...string) *chat {
 	chat := &chat{
-		log: log,
-		TMI: twitch.NewClient(cfg.Name, cfg.OAuth),
-		svc: svc,
+		log:      log,
+		Cfg:      cfg,
+		TMI:      twitch.NewClient(cfg.Name, cfg.OAuth),
+		svc:      svc,
+		Cooldown: make(map[string]time.Time),
+		Ignore:   make(map[string]struct{}),
 	}
+
+	chat.FillIgnoreList()
 
 	chat.Commands()
 
@@ -53,17 +72,28 @@ func (c *chat) Close() {
 
 func (c *chat) Commands() {
 	c.TMI.OnPrivateMessage(func(msg twitch.PrivateMessage) {
+		if ignore := c.IgnoreMsg(msg); ignore {
+			return
+		}
 		if ok := c.CommandPing(msg); ok {
 			return
 		}
 		if ok := c.CommandScreenshot(msg); ok {
 			return
 		}
-		if ok := c.CommandPreviewLink(msg); ok {
-			return
-		}
 		if ok := c.CommandInvite(msg); ok {
 			return
 		}
+		if ok := c.CommandPreviewLink(msg); ok {
+			return
+		}
 	})
+}
+
+func (c *chat) FillIgnoreList() {
+	c.Ignore[c.Cfg.Name] = struct{}{} // ignore ourself
+
+	for _, channel := range c.Cfg.Ignore {
+		c.Ignore[channel] = struct{}{}
+	}
 }

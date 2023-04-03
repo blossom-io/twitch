@@ -11,7 +11,7 @@ import (
 //go:generate mockery --name Servicer
 type Servicer interface {
 	Screenshot(channel string) (imgURL string, err error)
-	PreviewLink(URL string) (description string, err error)
+	PreviewLink(URL string) (description string, linkType Link, err error)
 }
 
 type service struct {

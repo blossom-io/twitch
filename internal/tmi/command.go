@@ -2,6 +2,7 @@ package tmi
 
 import (
 	"errors"
+	"fmt"
 
 	"blossom/pkg/link"
 
@@ -10,6 +11,10 @@ import (
 
 func (c *chat) CommandPing(msg twitch.PrivateMessage) (ok bool) {
 	if msg.Message == "!ping" {
+		if onCooldown := c.IsCooldown(msg.Channel, CmdSS); onCooldown {
+			return true
+		}
+
 		c.TMI.Reply(msg.Channel, msg.ID, "pong!")
 		return true
 	}
@@ -19,15 +24,19 @@ func (c *chat) CommandPing(msg twitch.PrivateMessage) (ok bool) {
 
 func (c *chat) CommandScreenshot(msg twitch.PrivateMessage) (ok bool) {
 	if msg.Message == "!ss" || msg.Message == "!скриншот" {
+		if onCooldown := c.IsCooldown(msg.Channel, CmdSS); onCooldown {
+			return true
+		}
+
 		imgURL, err := c.svc.Screenshot(msg.Channel)
 		if errors.Is(errors.New("stream is offline or channel not found"), err) {
-			c.log.Debug("service - !ss - Screenshot: %s", err)
+			c.log.Debug("service - CommandScreenshot: %s", err)
 			c.TMI.Reply(msg.Channel, msg.ID, "stream is offline")
 			return true
 		}
 
 		if err != nil {
-			c.log.Error("tmi - Commands: %w", err)
+			c.log.Error("service - CommandScreenshot: %w", err)
 			return true
 		}
 
@@ -45,22 +54,32 @@ func (c *chat) CommandPreviewLink(msg twitch.PrivateMessage) (ok bool) {
 		return false
 	}
 
-	description, err := c.svc.PreviewLink(URL)
+	if onCooldown := c.IsCooldown(msg.Channel, CmdPreviewLink); onCooldown {
+		return true
+	}
+
+	description, linkType, err := c.svc.PreviewLink(URL)
 	if err != nil {
-		c.log.Error("tmi - Commands: %w", err)
+		c.log.Error("tmi - CommandPreviewLink: %w", err)
 
 		return false
 	}
 
-	c.TMI.Reply(msg.Channel, msg.ID, description)
+	m := fmt.Sprint(linkType, ": ", description)
+	c.TMI.Reply(msg.Channel, msg.ID, m)
 
 	return true
 }
 
 func (c *chat) CommandInvite(msg twitch.PrivateMessage) (ok bool) {
-	if msg.Message == "!invite" {
-		c.TMI.Reply(msg.Channel, msg.ID, "Просто добавь воды!")
+	if onCooldown := c.IsCooldown(msg.Channel, CmdInvite); onCooldown {
+		return true
 	}
 
-	return true
+	if msg.Message == "!invite" {
+		c.TMI.Reply(msg.Channel, msg.ID, "Просто добавь воды!")
+		return true
+	}
+
+	return false
 }

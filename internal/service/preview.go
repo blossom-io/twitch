@@ -4,14 +4,14 @@ import (
 	"net/url"
 )
 
-type Link int
+type Link string
 
 const (
-	LinkUnknown Link = iota
-	LinkYouTube
+	LinkUnknown Link = "Unknown"
+	LinkYouTube Link = "YouTube"
 )
 
-func (s *service) PreviewLink(URL string) (description string, err error) {
+func (s *service) PreviewLink(URL string) (description string, linkType Link, err error) {
 	switch GetLinkType(URL) {
 	case LinkYouTube:
 		description, err = s.Youtube.GetVideoTitle(URL)
@@ -19,13 +19,13 @@ func (s *service) PreviewLink(URL string) (description string, err error) {
 			s.log.Error("service - PreviewLink - youtube.GetVideoTitle: %w", err)
 		}
 
-		return description, err
+		return description, LinkYouTube, err
 
 	case LinkUnknown:
 		s.log.Debug("service - PreviewLink - LinkUnknown")
 	}
 
-	return description, err
+	return description, LinkUnknown, err
 }
 
 // GetLinkType gets the type of link. Example: https://www.youtube.com/watch?v=QH2-TGUlwu4 -> LinkYouTube
