@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3] - 2023-04-08
+
+### Fixed
+
+- Prevew Link: Do not reply to the message if the link is not supported.
+
 ## [0.0.2] - 2023-04-04
 
 ### Added
