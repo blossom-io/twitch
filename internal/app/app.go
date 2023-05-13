@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"syscall"
 
 	"blossom/internal/config"
 	"blossom/internal/service"
@@ -18,7 +17,7 @@ import (
 
 // Run injects dependencies and runs application.
 func Run(cfg *config.Config) {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
 	log := logger.New(cfg.Bot.LogLevel)

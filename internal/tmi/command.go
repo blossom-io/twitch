@@ -61,7 +61,7 @@ func (c *chat) CommandPreviewLink(msg twitch.PrivateMessage) (ok bool) {
 
 	description, linkType, err := c.svc.PreviewLink(URL)
 	if err != nil || linkType == service.LinkUnknown {
-		c.log.Error("tmi - CommandPreviewLink", description, linkType, err, msg)
+		c.log.Debug("tmi - CommandPreviewLink", description, linkType, err, msg)
 
 		return false
 	}
