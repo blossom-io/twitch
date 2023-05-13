@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -24,12 +22,7 @@ type (
 func New(configPath string) (*Config, error) {
 	c := &Config{}
 
-	err := cleanenv.ReadConfig(configPath, c)
-	if err != nil {
-		return nil, fmt.Errorf("config error: %w", err)
-	}
-
-	err = cleanenv.ReadEnv(c)
+	err := cleanenv.ReadEnv(c)
 	if err != nil {
 		return nil, err
 	}
