@@ -10,6 +10,8 @@ import (
 	"github.com/gempir/go-twitch-irc/v4"
 )
 
+var msgInvite = "перейди по ссылке https://t.blsm.me/%s для приглашения в закрытый сабчат"
+
 func (c *chat) CommandPing(msg twitch.PrivateMessage) (ok bool) {
 	if msg.Message == "!ping" {
 		if onCooldown := c.IsCooldown(msg.Channel, CmdSS); onCooldown {
@@ -78,7 +80,7 @@ func (c *chat) CommandInvite(msg twitch.PrivateMessage) (ok bool) {
 	}
 
 	if msg.Message == "!invite" {
-		c.TMI.Reply(msg.Channel, msg.ID, "Просто добавь воды!")
+		c.TMI.Reply(msg.Channel, msg.ID, fmt.Sprintf(msgInvite, msg.Channel))
 		return true
 	}
 

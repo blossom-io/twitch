@@ -72,6 +72,7 @@ func (c *chat) Close() {
 
 func (c *chat) Commands() {
 	c.TMI.OnPrivateMessage(func(msg twitch.PrivateMessage) {
+		c.log.Debug("chat - OnPrivateMessage: %s", msg.Message)
 		if ignore := c.IgnoreMsg(msg); ignore {
 			return
 		}
