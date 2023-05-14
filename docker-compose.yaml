@@ -1,9 +1,13 @@
-version: "3"
+version: "3.9"
 
 services:
   bot:
     container_name: bot
     build: .
     image: bot
-    volumes:
-      - ./internal/config/config.dev.yaml:/app/config.yaml
+    environment:
+      - BLOSSOM_TW_BOT_NAME=${BLOSSOM_TW_BOT_NAME}
+      - BLOSSOM_TW_BOT_OAUTH=${BLOSSOM_TW_BOT_OAUTH}
+      - BLOSSOM_TW_LOG_LEVEL=${BLOSSOM_TW_LOG_LEVEL}
+      - BLOSSOM_TW_CHANNEL=${BLOSSOM_TW_CHANNEL}
+      - BLOSSOM_TW_IGNORE=${BLOSSOM_TW_IGNORE}
