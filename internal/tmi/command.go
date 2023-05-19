@@ -1,7 +1,6 @@
 package tmi
 
 import (
-	"errors"
 	"fmt"
 
 	"blossom/internal/service"
@@ -31,20 +30,17 @@ func (c *chat) CommandScreenshot(msg twitch.PrivateMessage) (ok bool) {
 			return true
 		}
 
-		imgURL, err := c.svc.Screenshot(msg.Channel)
-		if errors.Is(errors.New("stream is offline or channel not found"), err) {
-			c.log.Debug("service - CommandScreenshot: %s", err)
-			c.TMI.Reply(msg.Channel, msg.ID, "stream is offline")
-			return true
-		}
+		go func() {
+			imgURL, err := c.svc.Screenshot(msg.Channel)
+			if err != nil {
+				c.log.Error("service - CommandScreenshot: %w", err)
+				return
+			}
 
-		if err != nil {
-			c.log.Error("service - CommandScreenshot: %w", err)
-			return true
-		}
+			c.log.Debug("img upload success", imgURL)
+			c.TMI.Reply(msg.Channel, msg.ID, imgURL)
+		}()
 
-		c.log.Debug("img upload success", imgURL)
-		c.TMI.Reply(msg.Channel, msg.ID, imgURL)
 		return true
 	}
 

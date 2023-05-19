@@ -1,6 +1,7 @@
 package tmi
 
 import (
+	"sync"
 	"time"
 
 	"blossom/pkg/generator"
@@ -14,12 +15,17 @@ var (
 	CmdCdPreviewLink = time.Second * 3
 )
 
+type cooldown struct {
+	mu       sync.Mutex
+	Cooldown map[string]time.Time
+}
+
 // IsCooldown checks if the command is on cooldown for the channel.
 func (c *chat) IsCooldown(channel string, cmd Cmd) (onCooldown bool) {
 	key := generator.NewCooldownKey(channel, string(cmd))
 
-	if _, ok := c.Cooldown[key]; ok {
-		if time.Since(c.Cooldown[key]) < c.CooldownDuration(cmd) {
+	if _, ok := c.Cooldown.Cooldown[key]; ok {
+		if time.Since(c.Cooldown.Cooldown[key]) < c.CooldownDuration(cmd) {
 			return true
 		}
 	}
@@ -31,7 +37,10 @@ func (c *chat) IsCooldown(channel string, cmd Cmd) (onCooldown bool) {
 
 func (c *chat) SetCooldown(channel string, cmd Cmd) {
 	key := generator.NewCooldownKey(channel, string(cmd))
-	c.Cooldown[key] = time.Now()
+
+	c.Cooldown.mu.Lock()
+	defer c.Cooldown.mu.Unlock()
+	c.Cooldown.Cooldown[key] = time.Now()
 }
 
 // CooldownDuration returns the duration of the cooldown for the command.

@@ -1,6 +1,7 @@
 package tmi
 
 import (
+	"fmt"
 	"time"
 
 	"blossom/internal/config"
@@ -25,8 +26,9 @@ type chat struct {
 	Cfg      *config.Config
 	TMI      *twitch.Client // Twitch Messaging Interface
 	svc      service.Servicer
-	Cooldown map[string]time.Time
-	Ignore   map[string]struct{}
+	Cooldown *cooldown
+	// Cooldown map[string]time.Time
+	Ignore map[string]struct{}
 }
 
 func New(log logger.Logger, cfg *config.Config, svc service.Servicer, channels ...string) *chat {
@@ -35,7 +37,7 @@ func New(log logger.Logger, cfg *config.Config, svc service.Servicer, channels .
 		Cfg:      cfg,
 		TMI:      twitch.NewClient(cfg.Name, cfg.OAuth),
 		svc:      svc,
-		Cooldown: make(map[string]time.Time),
+		Cooldown: &cooldown{Cooldown: make(map[string]time.Time)},
 		Ignore:   make(map[string]struct{}),
 	}
 
@@ -72,7 +74,7 @@ func (c *chat) Close() {
 
 func (c *chat) Commands() {
 	c.TMI.OnPrivateMessage(func(msg twitch.PrivateMessage) {
-		c.log.Debug("chat - OnPrivateMessage: %s", msg.Message)
+		fmt.Println(msg.Message)
 		if ignore := c.IgnoreMsg(msg); ignore {
 			return
 		}
