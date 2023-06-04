@@ -30,7 +30,7 @@ func New(lvl string) Logger {
 		logLevel.Set(slog.LevelDebug)
 	}
 
-	slog := slog.New(opts.NewJSONHandler(os.Stdout))
+	slog := slog.New(slog.NewJSONHandler(os.Stdout, &opts))
 
 	return &logger{Slog: slog}
 }
