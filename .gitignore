@@ -1,0 +1,9 @@
+.vscode
+__debug_bin
+internal/config/config.prod.yaml
+internal/config/config.dev.yaml
+internal/mocks
+.env
+go.work
+go.work.sum
+main
