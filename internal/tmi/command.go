@@ -1,7 +1,9 @@
 package tmi
 
 import (
+	"context"
 	"fmt"
+	"strings"
 
 	"blossom/internal/service"
 	"blossom/pkg/link"
@@ -77,6 +79,32 @@ func (c *chat) CommandInvite(msg twitch.PrivateMessage) (ok bool) {
 
 	if msg.Message == "!invite" {
 		c.TMI.Reply(msg.Channel, msg.ID, fmt.Sprintf(msgInvite, msg.Channel))
+		return true
+	}
+
+	return false
+}
+
+func (c *chat) CommandGPT(msg twitch.PrivateMessage) (ok bool) {
+	if onCooldown := c.IsCooldown(msg.Channel, CmdGPT); onCooldown {
+		return true
+	}
+
+	if after, ok := strings.CutPrefix(msg.Message, "!gpt"); ok {
+		ctx, cancel := context.WithTimeout(context.Background(), c.Cfg.Bot.CmdTimeout)
+		defer cancel()
+
+		prompt := fmt.Sprintf("%s %s", after, c.Cfg.AI.CustomInstructions)
+
+		answer, err := c.svc.Ask(ctx, prompt)
+		if err != nil {
+			c.log.Error(err.Error())
+
+			return false
+		}
+
+		c.TMI.Reply(msg.Channel, msg.ID, answer)
+
 		return true
 	}
 
