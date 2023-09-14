@@ -13,6 +13,7 @@ var (
 	CmdCdSS          = time.Second * 5
 	CmdCdInvite      = time.Second * 10
 	CmdCdPreviewLink = time.Second * 3
+	CmdCdGPT         = time.Second * 3
 )
 
 type cooldown struct {
@@ -54,6 +55,8 @@ func (c *chat) CooldownDuration(cmd Cmd) time.Duration {
 		return CmdCdPing
 	case CmdSS:
 		return CmdCdSS
+	case CmdGPT:
+		return CmdCdGPT
 	default:
 		return CmdCdDefault
 	}

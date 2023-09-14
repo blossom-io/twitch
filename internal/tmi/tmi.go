@@ -19,6 +19,7 @@ const (
 	CmdSS          Cmd = "!ss"
 	CmdInvite      Cmd = "!invite"
 	CmdPreviewLink Cmd = "previewlink"
+	CmdGPT         Cmd = "!gpt"
 )
 
 type chat struct {
@@ -85,6 +86,9 @@ func (c *chat) Commands() {
 			return
 		}
 		if ok := c.CommandInvite(msg); ok {
+			return
+		}
+		if ok := c.CommandGPT(msg); ok {
 			return
 		}
 		if ok := c.CommandPreviewLink(msg); ok {

@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"blossom/internal/config"
+	"blossom/internal/infrastructure/gpt"
 	"blossom/internal/service"
 	"blossom/internal/tmi"
 	"blossom/pkg/ffmpeg"
@@ -20,12 +21,12 @@ func Run(cfg *config.Config) {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	log := logger.New(cfg.Bot.LogLevel)
+	log := logger.New()
 	log.Debug("starting bot...")
 
 	log.Info("channels to connect", cfg.Channel)
 
-	svc := service.New(log, ffmpeg.New(), imgur.New(), twitch.New(log), youtube.New())
+	svc := service.New(log, ffmpeg.New(), imgur.New(), twitch.New(log), youtube.New(), gpt.New(cfg, log))
 
 	chat := tmi.New(log, cfg, svc, cfg.Channel...)
 	defer chat.Close()

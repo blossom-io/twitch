@@ -1,63 +1,69 @@
 package logger
 
 import (
+	"context"
+	"log/slog"
 	"os"
-
-	"golang.org/x/exp/slog"
 )
 
-//go:generate mockery --name Logger
 type Logger interface {
+	DebugContext(ctx context.Context, msg string, args ...any)
 	Debug(msg string, args ...any)
-	Info(message string, args ...any)
-	Error(message string, args ...any)
+	InfoContext(ctx context.Context, msg string, args ...any)
+	Info(msg string, args ...any)
+	WarnContext(ctx context.Context, msg string, args ...any)
+	Warn(msg string, args ...any)
+	ErrorContext(ctx context.Context, msg string, args ...any)
+	Error(msg string, args ...any)
 }
 
 type logger struct {
-	Slog *slog.Logger
+	log *slog.Logger
 }
 
-// New returns a new structured logger.
-func New(lvl string) Logger {
-	logLevel := &slog.LevelVar{}
+var _ Logger = (*logger)(nil)
 
-	opts := slog.HandlerOptions{
+func New() Logger {
+	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
-		Level:     logLevel,
+		Level:     slog.LevelDebug,
+	}))
+
+	logger := &logger{
+		log: log,
 	}
 
-	if lvl == "debug" {
-		logLevel.Set(slog.LevelDebug)
-	}
+	return logger
+}
 
-	slog := slog.New(slog.NewJSONHandler(os.Stdout, &opts))
-
-	return &logger{Slog: slog}
+func (l *logger) DebugContext(ctx context.Context, msg string, args ...any) {
+	l.log.DebugContext(ctx, msg, args...)
 }
 
 func (l *logger) Debug(msg string, args ...any) {
-	if args == nil {
-		l.Slog.Debug(msg)
-		return
-	}
+	l.log.Debug(msg, args...)
+}
 
-	l.Slog.Debug(msg, slog.Any("args", args))
+func (l *logger) InfoContext(ctx context.Context, msg string, args ...any) {
+	l.log.InfoContext(ctx, msg, args...)
 }
 
 func (l *logger) Info(msg string, args ...any) {
-	if args == nil {
-		l.Slog.Info(msg)
-		return
-	}
+	l.log.Info(msg, args...)
+}
 
-	l.Slog.Info(msg, slog.Any("args", args))
+func (l *logger) WarnContext(ctx context.Context, msg string, args ...any) {
+	l.log.WarnContext(ctx, msg, args...)
+}
+
+func (l *logger) Warn(msg string, args ...any) {
+	l.log.Warn(msg, args...)
+}
+
+func (l *logger) ErrorContext(ctx context.Context, msg string, args ...any) {
+	l.log.ErrorContext(ctx, msg, args...)
 }
 
 func (l *logger) Error(msg string, args ...any) {
-	if args == nil {
-		l.Slog.Error(msg)
-		return
-	}
-
-	l.Slog.Error(msg, slog.Any("args", args))
+	l.log.Error(msg, args...)
 }
