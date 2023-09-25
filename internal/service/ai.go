@@ -3,6 +3,7 @@ package service
 import (
 	"blossom/internal/entity"
 	"context"
+	"strings"
 )
 
 type AIer interface {
@@ -11,7 +12,14 @@ type AIer interface {
 }
 
 func (svc *service) Ask(ctx context.Context, prompt string) (answer string, err error) {
-	return svc.gpt.Ask(ctx, prompt)
+	answer, err = svc.gpt.Ask(ctx, prompt)
+	if err != nil {
+		return "", err
+	}
+
+	answer = strings.ReplaceAll(answer, "\n", " ") // remove newlines since twitch chat doesn't support them
+
+	return answer, nil
 }
 
 func (svc *service) AskStream(ctx context.Context, prompt string) (delta chan entity.Delta, err error) {

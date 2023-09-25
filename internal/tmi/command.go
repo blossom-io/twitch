@@ -3,8 +3,12 @@ package tmi
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
+	"time"
+	"unicode/utf8"
 
+	consts "blossom/internal/const"
 	"blossom/internal/service"
 	"blossom/pkg/link"
 
@@ -86,15 +90,20 @@ func (c *chat) CommandInvite(msg twitch.PrivateMessage) (ok bool) {
 }
 
 func (c *chat) CommandGPT(msg twitch.PrivateMessage) (ok bool) {
+	c.log.Debug("IsCooldown")
 	if onCooldown := c.IsCooldown(msg.Channel, CmdGPT); onCooldown {
 		return true
 	}
 
-	if after, ok := strings.CutPrefix(msg.Message, "!gpt"); ok {
+	c.log.Debug("CutPrefix")
+
+	if after, ok := strings.CutPrefix(msg.Message, "!gpt "); ok && after != "" {
 		ctx, cancel := context.WithTimeout(context.Background(), c.Cfg.Bot.CmdTimeout)
 		defer cancel()
 
 		prompt := fmt.Sprintf("%s %s", after, c.Cfg.AI.CustomInstructions)
+
+		c.log.Debug("prompt", slog.String("prompt", prompt))
 
 		answer, err := c.svc.Ask(ctx, prompt)
 		if err != nil {
@@ -103,7 +112,36 @@ func (c *chat) CommandGPT(msg twitch.PrivateMessage) (ok bool) {
 			return false
 		}
 
+		c.log.DebugContext(ctx, consts.ReplyChatMsg, c.log.Group(consts.ReplyKey,
+			slog.String(consts.AnswerKey, answer),
+			slog.Any(consts.TwitchMsg, msg),
+		))
+
+		if utf8.RuneCountInString(answer) > c.Cfg.AI.MaxReplyLen {
+			answer = answer[:c.Cfg.AI.MaxReplyLen]
+
+			c.log.Debug("answer too long, cutted", slog.String("answer", answer))
+		}
+
+		c.log.Debug("reply", slog.String("answer", answer))
+
 		c.TMI.Reply(msg.Channel, msg.ID, answer)
+
+		return true
+	}
+
+	return false
+}
+
+func (c *chat) CommandTest(msg twitch.PrivateMessage) (ok bool) {
+	if msg.Message == "!watchtime" {
+		if onCooldown := c.IsCooldown(msg.Channel, CmdSS); onCooldown {
+			return true
+		}
+
+		time.Sleep(3 * time.Second)
+
+		c.TMI.Say("wmw_", "pong!")
 
 		return true
 	}

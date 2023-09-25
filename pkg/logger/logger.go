@@ -15,6 +15,7 @@ type Logger interface {
 	Warn(msg string, args ...any)
 	ErrorContext(ctx context.Context, msg string, args ...any)
 	Error(msg string, args ...any)
+	Group(key string, args ...any) slog.Attr
 }
 
 type logger struct {
@@ -66,4 +67,8 @@ func (l *logger) ErrorContext(ctx context.Context, msg string, args ...any) {
 
 func (l *logger) Error(msg string, args ...any) {
 	l.log.Error(msg, args...)
+}
+
+func (l *logger) Group(key string, args ...any) slog.Attr {
+	return slog.Group(key, args...)
 }

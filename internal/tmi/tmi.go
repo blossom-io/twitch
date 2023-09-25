@@ -2,6 +2,7 @@ package tmi
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"blossom/internal/config"
@@ -29,20 +30,24 @@ type chat struct {
 	svc      service.Servicer
 	Cooldown *cooldown
 	// Cooldown map[string]time.Time
-	Ignore map[string]struct{}
+	IgnoreChannels  map[string]struct{}
+	CommandsEnabled map[string]struct{}
 }
 
 func New(log logger.Logger, cfg *config.Config, svc service.Servicer, channels ...string) *chat {
 	chat := &chat{
-		log:      log,
-		Cfg:      cfg,
-		TMI:      twitch.NewClient(cfg.Name, cfg.OAuth),
-		svc:      svc,
-		Cooldown: &cooldown{Cooldown: make(map[string]time.Time)},
-		Ignore:   make(map[string]struct{}),
+		log:             log,
+		Cfg:             cfg,
+		TMI:             twitch.NewClient(cfg.Name, cfg.OAuth),
+		svc:             svc,
+		Cooldown:        &cooldown{Cooldown: make(map[string]time.Time)},
+		IgnoreChannels:  make(map[string]struct{}),
+		CommandsEnabled: make(map[string]struct{}),
 	}
 
 	chat.FillIgnoreList()
+
+	chat.FillCommandsEnabled()
 
 	chat.Commands()
 
@@ -75,32 +80,62 @@ func (c *chat) Close() {
 
 func (c *chat) Commands() {
 	c.TMI.OnPrivateMessage(func(msg twitch.PrivateMessage) {
-		fmt.Println(msg.Message)
+
+		fmt.Printf("%s: %s\n", msg.Channel, msg.Message)
+
+		if !strings.HasPrefix(msg.Message, "!") {
+
+			return
+		}
+
+		c.log.Debug("IsCommandEnabled")
+
+		if cmdEnabled := c.IsCommandEnabled(msg); !cmdEnabled {
+
+			return
+		}
+
+		c.log.Debug("IgnoreMsg")
+
 		if ignore := c.IgnoreMsg(msg); ignore {
+
 			return
 		}
-		if ok := c.CommandPing(msg); ok {
-			return
-		}
-		if ok := c.CommandScreenshot(msg); ok {
-			return
-		}
-		if ok := c.CommandInvite(msg); ok {
-			return
-		}
-		if ok := c.CommandGPT(msg); ok {
-			return
-		}
-		if ok := c.CommandPreviewLink(msg); ok {
-			return
-		}
+
+		go func() {
+			if ok := c.CommandPing(msg); ok {
+				return
+			}
+			if ok := c.CommandScreenshot(msg); ok {
+				return
+			}
+			if ok := c.CommandInvite(msg); ok {
+				return
+			}
+			if ok := c.CommandGPT(msg); ok {
+				return
+			}
+			if ok := c.CommandPreviewLink(msg); ok {
+				return
+			}
+			// if ok := c.CommandTest(msg); ok {
+			// 	return
+			// }
+		}()
+
 	})
 }
 
 func (c *chat) FillIgnoreList() {
-	c.Ignore[c.Cfg.Name] = struct{}{} // ignore ourself
+	c.IgnoreChannels[c.Cfg.Name] = struct{}{} // ignore ourself
 
-	for _, channel := range c.Cfg.Ignore {
-		c.Ignore[channel] = struct{}{}
+	for _, channel := range c.Cfg.IgnoreChannels {
+		c.IgnoreChannels[channel] = struct{}{}
+	}
+}
+
+func (c *chat) FillCommandsEnabled() {
+	for _, cmd := range c.Cfg.CommandsEnabled {
+		c.CommandsEnabled[cmd] = struct{}{}
 	}
 }
