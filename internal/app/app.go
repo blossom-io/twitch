@@ -26,7 +26,7 @@ func Run(cfg *config.Config) {
 
 	log.Info("channels to connect", cfg.Channel)
 
-	svc := service.New(log, ffmpeg.New(), imgur.New(), twitch.New(log), youtube.New(), gpt.New(cfg, log))
+	svc := service.New(log, cfg, ffmpeg.New(), imgur.New(), twitch.New(log), youtube.New(), gpt.New(cfg, log))
 
 	chat := tmi.New(log, cfg, svc, cfg.Channel...)
 	defer chat.Close()

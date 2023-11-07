@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/sashabaranov/go-openai v1.15.3
+	github.com/sashabaranov/go-openai v1.17.5
 	github.com/stretchr/testify v1.8.4
 	github.com/wmw64/twitchpl v0.5.0
 )

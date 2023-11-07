@@ -37,6 +37,9 @@ func (g *GPT) Ask(ctx context.Context, prompt string) (string, error) {
 				Content: prompt,
 			},
 		},
+		ResponseFormat: &openai.ChatCompletionResponseFormat{
+			Type: openai.ChatCompletionResponseFormatTypeText,
+		},
 	}
 
 	res, err := g.client.CreateChatCompletion(ctx, req)
@@ -57,6 +60,9 @@ func (g *GPT) AskStream(ctx context.Context, prompt string) (stream *openai.Chat
 				Role:    openai.ChatMessageRoleSystem,
 				Content: prompt,
 			},
+		},
+		ResponseFormat: &openai.ChatCompletionResponseFormat{
+			Type: openai.ChatCompletionResponseFormatTypeText,
 		},
 		Stream: true,
 	}

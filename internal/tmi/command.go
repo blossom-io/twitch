@@ -8,7 +8,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	consts "blossom/internal/const"
+	"blossom/internal/consts"
 	"blossom/internal/service"
 	"blossom/pkg/link"
 
@@ -95,8 +95,6 @@ func (c *chat) CommandGPT(msg twitch.PrivateMessage) (ok bool) {
 		return true
 	}
 
-	c.log.Debug("CutPrefix")
-
 	if after, ok := strings.CutPrefix(msg.Message, "!gpt "); ok && after != "" {
 		ctx, cancel := context.WithTimeout(context.Background(), c.Cfg.Bot.CmdTimeout)
 		defer cancel()
@@ -124,6 +122,12 @@ func (c *chat) CommandGPT(msg twitch.PrivateMessage) (ok bool) {
 		}
 
 		c.log.Debug("reply", slog.String("answer", answer))
+
+		if c.svc.ContainsBannedWords(answer) {
+			c.log.Debug("answer contains banned words, skip", slog.String("answer", answer))
+
+			return false
+		}
 
 		c.TMI.Reply(msg.Channel, msg.ID, answer)
 

@@ -19,6 +19,7 @@ type (
 		Channel         []string      `env-required:"true" yaml:"channel"  env:"BLOSSOM_TW_CHANNEL" env-delim:","`
 		IgnoreChannels  []string      `env-required:"true" yaml:"ignore_channels"  env:"BLOSSOM_TW_IGNORE_CHANNELS" env-delim:","`
 		CommandsEnabled []string      `env-required:"true" yaml:"commands_enabled"  env:"BLOSSOM_TW_COMMANDS_ENABLED" env-delim:","`
+		BannedWords     []string      `env-required:"true" yaml:"banned_words"  env:"BLOSSOM_TW_BANNED_WORDS" env-delim:","`
 		CmdTimeout      time.Duration `env-required:"false" env-default:"20s" yaml:"cmd_timeout" env:"BLOSSOM_TW_CMD_TIMEOUT"`
 	}
 
